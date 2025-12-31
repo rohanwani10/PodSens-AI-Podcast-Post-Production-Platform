@@ -44,13 +44,13 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
  * Note: Transcription is NOT a feature - it's core functionality available to all plans
  */
 export const FEATURES = {
-    SUMMARY: "summary",
-    SOCIAL_POSTS: "social_posts",
-    TITLES: "titles",
+    SUMMARY: "ai_summary",
+    SOCIAL_POSTS: "social_media_posts",
+    TITLES: "podcast_title",
     HASHTAGS: "hashtags",
     YOUTUBE_TIMESTAMPS: "youtube_timestamps",
     KEY_MOMENTS: "key_moments",
-    SPEAKER_DIARIZATION: "speaker_diarization",
+    SPEAKER_DIARIZATION: "full_transcript_speaker_recognition",
 } as const;
 
 export type FeatureName = (typeof FEATURES)[keyof typeof FEATURES];

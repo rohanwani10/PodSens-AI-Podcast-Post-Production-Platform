@@ -1,17 +1,4 @@
-/**
- * File Upload API Route
- *
- * Generates pre-signed URLs for direct uploads to Vercel Blob.
- *
- * Flow:
- * 1. Client calls validateUploadAction server action (checks plan limits)
- * 2. If valid, client calls this route to get pre-signed upload URL
- * 3. Client uploads directly to Vercel Blob using the URL
- * 4. Client calls createProjectAction to finalize
- *
- * Note: Validation happens BEFORE this route is called (via server action).
- * This route only handles URL generation for the Vercel Blob upload.
- */
+
 import { type HandleUploadBody, handleUpload } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
