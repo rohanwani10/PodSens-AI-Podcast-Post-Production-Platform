@@ -13,12 +13,11 @@ export function Footer() {
                   <Sparkles className="h-5 w-5 text-white" />
                 </div>
                 <span className="font-bold text-lg gradient-emerald-text">
-                  Podassi
+                  PodSens
                 </span>
               </div>
               <p className="text-gray-600 text-sm leading-relaxed">
-                AI-powered podcast processing that transforms your content into
-                engagement gold.
+                AI Podcast Post-Production Platform.
               </p>
             </div>
 
@@ -88,7 +87,8 @@ export function Footer() {
           {/* Bottom bar */}
           <div className="pt-8 border-t border-gray-200">
             <p className="text-center text-sm text-gray-600">
-              {new Date().getFullYear()} Podassi. This is a demo project.
+              {new Date().getFullYear()} PodSens - AI Podcast Post-Production
+              Platform
             </p>
           </div>
         </div>
