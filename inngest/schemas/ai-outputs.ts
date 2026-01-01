@@ -1,17 +1,4 @@
 /**
- * Zod Schemas for AI-Generated Content
- * 
- * These schemas enforce structure for OpenAI Structured Outputs, ensuring:
- * - Type safety: Generated content matches our TypeScript types
- * - Validation: OpenAI's responses conform to our expected format
- * - Descriptions: Guide GPT on what to generate (used in prompt construction)
- * 
- * OpenAI Structured Outputs Flow:
- * 1. Define Zod schema with .describe() hints for GPT
- * 2. Pass schema to zodResponseFormat() in OpenAI API call
- * 3. OpenAI returns JSON matching the schema (no parsing errors!)
- * 4. Parse with schema.parse() for TypeScript types
- * 
  * Design Decision: Zod over TypeScript types alone
  * - Runtime validation (catches API changes or malformed responses)
  * - Self-documenting schemas (descriptions guide both GPT and developers)

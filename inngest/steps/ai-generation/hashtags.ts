@@ -1,9 +1,9 @@
 import type { step as InngestStep } from "inngest";
-import type OpenAI from "openai";
-import { zodResponseFormat } from "openai/helpe rs/zod";
-import { openai } from "../../lib/openai-client";
+import { geminiModel } from "../../lib/ai-client";
+import { SchemaType } from "@google/generative-ai";
 import { type Hashtags, hashtagsSchema } from "../../schemas/ai-outputs";
 import type { TranscriptWithExtras } from "../../types/assemblyai";
+
 
 // System prompt establishes GPT's knowledge of hashtag strategies
 const HASHTAGS_SYSTEM_PROMPT =
@@ -73,26 +73,69 @@ export async function generateHashtags(
     console.log("Generating hashtags with GPT");
 
     try {
-        // Bind OpenAI method to preserve `this` context for step.ai.wrap
-        const createCompletion = openai.chat.completions.create.bind(
-            openai.chat.completions
+        // Bind Gemini method to preserve `this` context for step.ai.wrap
+        const geminiResponse = await step.run(
+            "generate-hashtags-with-gemini",
+            async () => {
+                const result = await geminiModel.generateContent({
+                    contents: [{
+                        role: "user",
+                        parts: [{
+                            text: `${HASHTAGS_SYSTEM_PROMPT}\n\n${buildHashtagsPrompt(transcript)}`
+                        }]
+                    }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: SchemaType.OBJECT,
+                            properties: {
+                                youtube: {
+                                    type: SchemaType.ARRAY,
+                                    items: { type: SchemaType.STRING },
+                                    description: "Exactly 5 YouTube hashtags with # symbol",
+                                    minItems: 5,
+                                    maxItems: 5
+                                },
+                                instagram: {
+                                    type: SchemaType.ARRAY,
+                                    items: { type: SchemaType.STRING },
+                                    description: "6-8 Instagram hashtags with # symbol",
+                                    minItems: 6,
+                                    maxItems: 8
+                                },
+                                tiktok: {
+                                    type: SchemaType.ARRAY,
+                                    items: { type: SchemaType.STRING },
+                                    description: "5-6 TikTok hashtags with # symbol",
+                                    minItems: 5,
+                                    maxItems: 6
+                                },
+                                linkedin: {
+                                    type: SchemaType.ARRAY,
+                                    items: { type: SchemaType.STRING },
+                                    description: "Exactly 5 LinkedIn hashtags with # symbol",
+                                    minItems: 5,
+                                    maxItems: 5
+                                },
+                                twitter: {
+                                    type: SchemaType.ARRAY,
+                                    items: { type: SchemaType.STRING },
+                                    description: "Exactly 5 Twitter hashtags with # symbol",
+                                    minItems: 5,
+                                    maxItems: 5
+                                }
+                            },
+                            required: ["youtube", "instagram", "tiktok", "linkedin", "twitter"]
+                        }
+                    }
+                });
+
+                return result.response.text();
+            }
         );
 
-        // Call OpenAI with Structured Outputs for validated response
-        const response = (await step.ai.wrap(
-            "generate-hashtags-with-gpt",
-            createCompletion,
-            {
-                model: "gpt-5-mini",
-                messages: [
-                    { role: "system", content: HASHTAGS_SYSTEM_PROMPT },
-                    { role: "user", content: buildHashtagsPrompt(transcript) },
-                ],
-                response_format: zodResponseFormat(hashtagsSchema, "hashtags"),
-            }
-        )) as OpenAI.Chat.Completions.ChatCompletion;
+        const content = geminiResponse;
 
-        const content = response.choices[0]?.message?.content;
         // Parse and validate against schema
         const hashtags = content
             ? hashtagsSchema.parse(JSON.parse(content))

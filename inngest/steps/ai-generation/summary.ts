@@ -1,8 +1,6 @@
 /**
  * AI Summary Generation Step
  *
- * Generates multi-format podcast summaries using OpenAI GPT.
- *
  * Summary Formats:
  * - Full: 200-300 word comprehensive overview for show notes
  * - Bullets: 5-7 scannable key points for quick reference
@@ -10,7 +8,6 @@
  * - TL;DR: One-sentence hook for social media
  *
  * Integration:
- * - Uses OpenAI Structured Outputs (zodResponseFormat) for type safety
  * - Wrapped in step.ai.wrap() for Inngest observability and automatic retries
  * - Leverages AssemblyAI chapters for better context understanding
  *
@@ -20,9 +17,9 @@
  * - Each format optimized for its specific purpose
  */
 import type { step as InngestStep } from "inngest";
-import type OpenAI from "openai";
-import { zodResponseFormat } from "openai/helpers/zod";
-import { openai } from "../../lib/openai-client";
+import { geminiModel } from "../../lib/ai-client";
+import { SchemaType } from "@google/generative-ai";
+
 import { type Summary, summarySchema } from "../../schemas/ai-outputs";
 import type { TranscriptWithExtras } from "../../types/assemblyai";
 
@@ -80,8 +77,6 @@ Be specific, engaging, and valuable. Focus on what makes this podcast unique and
 }
 
 /**
- * Generates summary using OpenAI GPT with structured outputs
- *
  * Error Handling:
  * - Returns fallback summary on API failure (graceful degradation)
  * - Logs errors for debugging
@@ -99,27 +94,43 @@ export async function generateSummary(
     console.log("Generating podcast summary with GPT-4");
 
     try {
-        // Bind OpenAI method to preserve `this` context (required for step.ai.wrap)
-        const createCompletion = openai.chat.completions.create.bind(
-            openai.chat.completions
+        // Bind Gemini method to preserve `this` context (required for step.ai.wrap)
+        const geminiResponse = await step.run(
+            "generate-summary-with-gemini",
+            async () => {
+                const result = await geminiModel.generateContent({
+                    contents: [{
+                        role: "user",
+                        parts: [{
+                            text: `${SUMMARY_SYSTEM_PROMPT}\n\n${buildSummaryPrompt(transcript)}`
+                        }]
+                    }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: SchemaType.OBJECT,
+                            properties: {
+                                full: { type: SchemaType.STRING },
+                                bullets: {
+                                    type: SchemaType.ARRAY,
+                                    items: { type: SchemaType.STRING }
+                                },
+                                insights: {
+                                    type: SchemaType.ARRAY,
+                                    items: { type: SchemaType.STRING }
+                                },
+                                tldr: { type: SchemaType.STRING }
+                            },
+                            required: ["full", "bullets", "insights", "tldr"]
+                        }
+                    }
+                });
+
+                return result.response.text();
+            }
         );
 
-        // Call OpenAI with Structured Outputs for type-safe response
-        const response = (await step.ai.wrap(
-            "generate-summary-with-gpt",
-            createCompletion,
-            {
-                model: "gpt-5-mini", // Fast and cost-effective model
-                messages: [
-                    { role: "system", content: SUMMARY_SYSTEM_PROMPT },
-                    { role: "user", content: buildSummaryPrompt(transcript) },
-                ],
-                // zodResponseFormat ensures response matches summarySchema
-                response_format: zodResponseFormat(summarySchema, "summary"),
-            }
-        )) as OpenAI.Chat.Completions.ChatCompletion;
-
-        const content = response.choices[0]?.message?.content;
+        const content = geminiResponse;
         // Parse and validate response against schema
         const summary = content
             ? summarySchema.parse(JSON.parse(content))

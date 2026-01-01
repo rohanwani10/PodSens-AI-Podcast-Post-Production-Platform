@@ -6,11 +6,11 @@
  *
  * Two-Step Process:
  * 1. Extract timing from AssemblyAI chapters (accurate timestamps)
- * 2. Use GPT to create punchy, clickable chapter titles
+ * 2. Use Gemini to create punchy, clickable chapter titles
  *
- * Why Hybrid Approach (AssemblyAI + GPT)?
+ * Why Hybrid Approach (AssemblyAI + Gemini)?
  * - AssemblyAI: Accurate timing and topic detection
- * - GPT: Engaging, YouTube-optimized titles
+ * - Gemini: Engaging, YouTube-optimized titles
  * - Result: Best of both - precise timing with compelling titles
  *
  * YouTube Requirements:
@@ -25,9 +25,10 @@
  * - Enhances viewer navigation experience
  */
 import type { step as InngestStep } from "inngest";
-import type OpenAI from "openai";
+import { geminiModel } from "../../lib/ai-client";
+import { SchemaType } from "@google/generative-ai";
+
 import { formatTimestamp } from "@/lib/format";
-import { openai } from "../../lib/openai-client";
 import type { TranscriptWithExtras } from "../../types/assemblyai";
 
 type YouTubeTimestamp = {
@@ -129,65 +130,44 @@ Return ONLY valid JSON in this exact format:
 
 Remember: Create TITLES, not transcript excerpts!`;
 
-    // Bind OpenAI method to preserve `this` context for step.ai.wrap
-    const createCompletion = openai.chat.completions.create.bind(
-        openai.chat.completions
-    );
-
-    // Call GPT to enhance chapter titles
-    const response = (await step.ai.wrap(
-        "generate-youtube-titles-with-gpt",
-        createCompletion,
-        {
-            model: "gpt-5-mini",
-            response_format: {
-                type: "json_schema",
-                json_schema: {
-                    name: "youtube_chapter_titles",
-                    strict: true,
-                    schema: {
-                        type: "object",
+    // Bind Gemini method to preserve `this` context for step.ai.wrap
+    const geminiResponse = await step.run(
+        "generate-youtube-titles-with-gemini",
+        async () => {
+            const result = await geminiModel.generateContent({
+                contents: [{
+                    role: "user",
+                    parts: [{
+                        text: `${prompt}\n\nSystem Context: You are a YouTube content expert who creates SHORT, DESCRIPTIVE TITLES for video chapters. CRITICAL: You create TITLES (like 'Introduction to AI'), NOT transcript text or full sentences. Always respond with valid JSON.`
+                    }]
+                }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: SchemaType.OBJECT,
                         properties: {
                             titles: {
-                                type: "array",
+                                type: SchemaType.ARRAY,
                                 items: {
-                                    type: "object",
+                                    type: SchemaType.OBJECT,
                                     properties: {
-                                        index: {
-                                            type: "number",
-                                            description: "Chapter index",
-                                        },
-                                        title: {
-                                            type: "string",
-                                            description: "Short, catchy chapter title (3-6 words)",
-                                        },
+                                        index: { type: SchemaType.NUMBER },
+                                        title: { type: SchemaType.STRING }
                                     },
-                                    required: ["index", "title"],
-                                    additionalProperties: false,
-                                },
-                            },
+                                    required: ["index", "title"]
+                                }
+                            }
                         },
-                        required: ["titles"],
-                        additionalProperties: false,
-                    },
-                },
-            },
-            messages: [
-                {
-                    role: "system",
-                    content:
-                        "You are a YouTube content expert who creates SHORT, DESCRIPTIVE TITLES for video chapters. CRITICAL: You create TITLES (like 'Introduction to AI'), NOT transcript text or full sentences. Always respond with valid JSON.",
-                },
-                {
-                    role: "user",
-                    content: prompt,
-                },
-            ],
-            max_completion_tokens: 1500, // Enough for 100 titles
-        }
-    )) as OpenAI.Chat.Completions.ChatCompletion;
+                        required: ["titles"]
+                    }
+                }
+            });
 
-    const content = response.choices[0]?.message?.content || '{"titles":[]}';
+            return result.response.text();
+        }
+    );
+
+    const content = geminiResponse || '{"titles":[]}';
 
     console.log("Raw GPT response:", content.substring(0, 500));
 

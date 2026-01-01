@@ -22,9 +22,8 @@
  * - Safety validation for Twitter's 280-char limit
  */
 import type { step as InngestStep } from "inngest";
-import type OpenAI from "openai";
-import { zodResponseFormat } from "openai/helpers/zod";
-import { openai } from "../../lib/openai-client";
+import { geminiModel } from "../../lib/ai-client";
+import { SchemaType } from "@google/generative-ai";
 import { type SocialPosts, socialPostsSchema } from "../../schemas/ai-outputs";
 import type { TranscriptWithExtras } from "../../types/assemblyai";
 
@@ -108,7 +107,7 @@ Make each post unique and truly optimized for that platform. No generic content.
 }
 
 /**
- * Generates platform-optimized social posts using OpenAI
+ * Generates platform-optimized social posts using Gemini
  * 
  * Error Handling:
  * - Returns placeholder posts on failure (graceful degradation)
@@ -127,50 +126,79 @@ export async function generateSocialPosts(
     console.log("Generating social posts with GPT-4");
 
     try {
-        // Bind OpenAI method to preserve `this` context for step.ai.wrap
-        const createCompletion = openai.chat.completions.create.bind(
-            openai.chat.completions
+        // Bind Gemini method to preserve `this` context for step.ai.wrap
+        const geminiResponse = await step.run(
+            "generate-social-posts-with-gemini",
+            async () => {
+                const result = await geminiModel.generateContent({
+                    contents: [{
+                        role: "user",
+                        parts: [{
+                            text: `${SOCIAL_SYSTEM_PROMPT}\n\n${buildSocialPrompt(transcript)}`
+                        }]
+                    }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: SchemaType.OBJECT,
+                            properties: {
+                                twitter: {
+                                    type: SchemaType.STRING,
+                                    description: "Twitter/X post (max 280 characters)"
+                                },
+                                linkedin: {
+                                    type: SchemaType.STRING,
+                                    description: "LinkedIn post (300-500 characters)"
+                                },
+                                instagram: {
+                                    type: SchemaType.STRING,
+                                    description: "Instagram caption (150-200 characters + hashtags)"
+                                },
+                                tiktok: {
+                                    type: SchemaType.STRING,
+                                    description: "TikTok caption (100-150 characters)"
+                                },
+                                youtube: {
+                                    type: SchemaType.STRING,
+                                    description: "YouTube description (400-600 characters)"
+                                },
+                                facebook: {
+                                    type: SchemaType.STRING,
+                                    description: "Facebook post (200-300 characters)"
+                                }
+                            },
+                            required: ["twitter", "linkedin", "instagram", "tiktok", "youtube", "facebook"]
+                        }
+                    }
+                });
+
+                return result.response.text();
+            }
         );
 
-        // Call OpenAI with Structured Outputs for type-safe, validated response
-        const response = (await step.ai.wrap(
-            "generate-social-posts-with-gpt",
-            createCompletion,
-            {
-                model: "gpt-5-mini",
-                messages: [
-                    { role: "system", content: SOCIAL_SYSTEM_PROMPT },
-                    { role: "user", content: buildSocialPrompt(transcript) },
-                ],
-                response_format: zodResponseFormat(socialPostsSchema, "social_posts"),
-            }
-        )) as OpenAI.Chat.Completions.ChatCompletion;
-
-        const content = response.choices[0]?.message?.content;
-        const socialPosts = content
-            ? socialPostsSchema.parse(JSON.parse(content))
+        const postsContent = geminiResponse;
+        // Parse and validate against schema
+        const posts = postsContent
+            ? socialPostsSchema.parse(JSON.parse(postsContent))
             : {
                 // Fallback posts if parsing fails
-                twitter: "New podcast episode!",
-                linkedin: "Check out our latest podcast.",
-                instagram: "New episode out now! 🎙️",
-                tiktok: "New podcast!",
-                youtube: "Watch our latest episode.",
-                facebook: "New podcast available!",
+                twitter: "New podcast episode out now!",
+                linkedin: "Check out our latest podcast episode.",
+                instagram: "New episode out now🎙️",
+                tiktok: "New ep dropped!",
+                youtube: "Watch our latest podcast episode.",
+                facebook: "New podcast episode available now!",
             };
 
-        // Safety check: Enforce Twitter's 280-character limit
-        // GPT sometimes exceeds despite prompt instructions
-        if (socialPosts.twitter.length > 280) {
-            console.warn(
-                `Twitter post exceeded 280 chars (${socialPosts.twitter.length}), truncating...`
-            );
-            socialPosts.twitter = `${socialPosts.twitter.substring(0, 277)}...`;
+        // Safety check: Ensure Twitter post is under 280 characters
+        if (posts.twitter.length > 280) {
+            console.warn(`Twitter post too long (${posts.twitter.length} chars), truncating`);
+            posts.twitter = posts.twitter.substring(0, 277) + "...";
         }
 
-        return socialPosts;
+        return posts;
     } catch (error) {
-        console.error("GPT social posts error:", error);
+        console.error("Gemini social posts error:", error);
 
         // Graceful degradation: Return error messages but allow workflow to continue
         return {

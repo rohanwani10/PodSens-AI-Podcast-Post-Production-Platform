@@ -18,11 +18,10 @@
  * - Keywords help with content strategy beyond just titles
  */
 import type { step as InngestStep } from "inngest";
-import type OpenAI from "openai";
-import { zodResponseFormat } from "openai/helpers/zod";
-import { openai } from "../../lib/openai-client";
+import { SchemaType } from "@google/generative-ai";
 import { type Titles, titlesSchema } from "../../schemas/ai-outputs";
 import type { TranscriptWithExtras } from "../../types/assemblyai";
+import { geminiModel } from "@/inngest/lib/ai-client";
 
 // System prompt defines GPT's expertise in SEO and viral content
 const TITLES_SYSTEM_PROMPT =
@@ -84,7 +83,7 @@ Make titles compelling, accurate, and optimized for discovery.`;
 }
 
 /**
- * Generates title suggestions using OpenAI with structured outputs
+ * Generates title suggestions using Gemini with structured outputs
  * 
  * Error Handling:
  * - Returns placeholder titles on failure
@@ -102,40 +101,76 @@ export async function generateTitles(
     console.log("Generating title suggestions with GPT-4");
 
     try {
-        // Bind OpenAI method to preserve `this` context for step.ai.wrap
-        const createCompletion = openai.chat.completions.create.bind(
-            openai.chat.completions,
+        // Bind Gemini method to preserve `this` context for step.ai.wrap
+        const geminiResponse = await step.run(
+            "generate-titles-with-gemini",
+            async () => {
+                const result = await geminiModel.generateContent({
+                    contents: [{
+                        role: "user",
+                        parts: [{
+                            text: `${TITLES_SYSTEM_PROMPT}\n\n${buildTitlesPrompt(transcript)}`
+                        }]
+                    }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: SchemaType.OBJECT,
+                            properties: {
+                                youtubeShort: {
+                                    type: SchemaType.ARRAY,
+                                    items: { type: SchemaType.STRING },
+                                    description: "Exactly 3 short YouTube titles (40-60 chars each)",
+                                    minItems: 3,
+                                    maxItems: 3
+                                },
+                                youtubeLong: {
+                                    type: SchemaType.ARRAY,
+                                    items: { type: SchemaType.STRING },
+                                    description: "Exactly 3 long YouTube titles (70-100 chars each)",
+                                    minItems: 3,
+                                    maxItems: 3
+                                },
+                                podcastTitles: {
+                                    type: SchemaType.ARRAY,
+                                    items: { type: SchemaType.STRING },
+                                    description: "Exactly 3 creative podcast episode titles",
+                                    minItems: 3,
+                                    maxItems: 3
+                                },
+                                seoKeywords: {
+                                    type: SchemaType.ARRAY,
+                                    items: { type: SchemaType.STRING },
+                                    description: "5-10 SEO keywords",
+                                    minItems: 5,
+                                    maxItems: 10
+                                }
+                            },
+                            required: ["youtubeShort", "youtubeLong", "podcastTitles", "seoKeywords"]
+                        }
+                    }
+                });
+
+                return result.response.text();
+            }
         );
 
-        // Call OpenAI with Structured Outputs for validated response
-        const response = (await step.ai.wrap(
-            "generate-titles-with-gpt",
-            createCompletion,
-            {
-                model: "gpt-5-mini",
-                messages: [
-                    { role: "system", content: TITLES_SYSTEM_PROMPT },
-                    { role: "user", content: buildTitlesPrompt(transcript) },
-                ],
-                response_format: zodResponseFormat(titlesSchema, "titles"),
-            },
-        )) as OpenAI.Chat.Completions.ChatCompletion;
-
-        const titlesContent = response.choices[0]?.message?.content;
+        const titlesContent = geminiResponse;
         // Parse and validate against schema
         const titles = titlesContent
             ? titlesSchema.parse(JSON.parse(titlesContent))
             : {
                 // Fallback titles if parsing fails
-                youtubeShort: ["Podcast Episode"],
-                youtubeLong: ["Podcast Episode - Full Discussion"],
-                podcastTitles: ["New Episode"],
-                seoKeywords: ["podcast"],
+                youtubeShort: ["Podcast Episode", "New Episode", "Latest Discussion"],
+                youtubeLong: ["Podcast Episode - Full Discussion", "Complete Episode", "Full Conversation"],
+                podcastTitles: ["New Episode", "Latest Episode", "Episode Discussion"],
+                seoKeywords: ["podcast", "episode", "discussion"],
             };
 
         return titles;
     } catch (error) {
-        console.error("GPT titles error:", error);
+        console.error("Gemini titles error:", error);
+
 
         // Graceful degradation: Return error indicators
         return {
