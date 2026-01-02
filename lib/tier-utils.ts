@@ -154,3 +154,5 @@ export function getMinimumPlanForFeature(feature: FeatureName): PlanName {
     if (PLAN_FEATURES.pro.includes(feature)) return "pro";
     return "ultra";
 }
+
+export type { FeatureName, PlanName };
