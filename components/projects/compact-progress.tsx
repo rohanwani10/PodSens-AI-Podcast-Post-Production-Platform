@@ -10,30 +10,26 @@ import {
 import { estimateAssemblyAITime } from "@/lib/processing-time-estimator";
 
 interface CompactProgressProps {
-  jobStatus: Doc<"projects">["jobStatus"];
-  fileDuration?: number;
-  createdAt: number;
+  project: Doc<"projects">;
 }
 
-export function CompactProgress({
-  jobStatus,
-  fileDuration,
-  createdAt,
-}: CompactProgressProps) {
+export function CompactProgress({ project }: CompactProgressProps) {
+  const { jobStatus, fileDuration, createdAt } = project;
   const [progress, setProgress] = useState(0);
 
-  const isTranscribing = jobStatus.transcription === "running";
+  const isTranscribing = jobStatus?.transcription === "running";
 
   // Count completed content generation steps (all 6 outputs)
+  // Presence of these top-level fields indicates that generation completed for that output
   const contentSteps = [
-    jobStatus.keyMoments,
-    jobStatus.summary,
-    jobStatus.social,
-    jobStatus.titles,
-    jobStatus.hashtags,
-    jobStatus.youtubeTimestamps,
+    project.keyMoments,
+    project.summary,
+    project.socialPosts,
+    project.titles,
+    project.hashtags,
+    project.youtubeTimestamps,
   ];
-  const completedSteps = contentSteps.filter((s) => s === "completed").length;
+  const completedSteps = contentSteps.filter((s) => Boolean(s)).length;
   const totalSteps = contentSteps.length;
 
   useEffect(() => {

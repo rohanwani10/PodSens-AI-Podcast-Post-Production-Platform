@@ -9,7 +9,7 @@
  * https://clerk.com/docs/nextjs/guides/billing/for-b2c
  */
 
-import type { Auth } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { convex } from "@/lib/convex-client";
 import { api } from "@/convex/_generated/api";
 import {
@@ -20,6 +20,9 @@ import {
     type PlanLimits,
     type PlanName,
 } from "./tier-config";
+
+type ClerkAuth = Awaited<ReturnType<typeof auth>>;
+
 
 export interface UploadValidationResult {
     allowed: boolean;
@@ -44,7 +47,7 @@ export interface UploadValidationResult {
  * @returns Validation result with details
  */
 export async function checkUploadLimits(
-    auth: Auth,
+    auth: ClerkAuth,
     userId: string,
     fileSize: number,
     duration?: number
@@ -115,7 +118,7 @@ export async function checkUploadLimits(
  * @returns True if user has access to feature
  */
 export function checkFeatureAccess(
-    auth: Auth,
+    auth: ClerkAuth,
     feature: FeatureName
 ): boolean {
     const { has } = auth;

@@ -136,11 +136,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
               {/* Progress Indicator for Processing */}
               {project.status === "processing" && project.jobStatus && (
                 <div className="pt-2">
-                  <CompactProgress
-                    jobStatus={project.jobStatus}
-                    fileDuration={project.fileDuration}
-                    createdAt={project.createdAt}
-                  />
+                  <CompactProgress project={project} />
                 </div>
               )}
 
