@@ -151,7 +151,7 @@ flowchart LR
     C --> D[Vercel Blob Storage]
     D --> E[Inngest Event]
     E --> F[AssemblyAI Transcription]
-    E --> G[OpenAI Content Generation]
+    E --> G[Gemini AI Content Generation]
     F --> H[Convex Database]
     G --> H
     H --> I[Real-time Subscription]
@@ -379,5 +379,7 @@ project status, the UI updates instantly.
 
 **Durable Execution**
 
-Inngest provides automatic retry logic. If OpenAI times out or AssemblyAI fails,
+Inngest provides automatic retry logic. If Gemini times out or AssemblyAI fails,
 the step retries with exponential backoff. Your users never lose work.
+
+---
