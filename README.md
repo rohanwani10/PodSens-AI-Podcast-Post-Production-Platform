@@ -1,385 +1,236 @@
-# PodSens - AI Podcast Post-Production Platform
+# 🎙️ AI Podcast Processor
 
-![Gemini](https://img.shields.io/badge/Google-Gemini-teal)
-![Next.js](https://img.shields.io/badge/Next.js-16-black)
-![Convex](https://img.shields.io/badge/Convex-Database-orange)
-![Clerk](https://img.shields.io/badge/Clerk-Auth-blue)
-![Inngest](https://img.shields.io/badge/Inngest-Workflows-purple)
-![AssemblyAI](https://img.shields.io/badge/AssemblyAI-Transcription-green)
-
----
-
-### Summary
-
-**PodSens** is an end-to-end AI-powered platform designed to automate podcast
-post-production workflows. The system transforms a single audio file upload into
-a comprehensive multi-platform content distribution package, reducing manual
-content creation time from hours to minutes.
-
----
-
-### ⚡ Technical Highlight
-
-**Parallel AI processing with Inngest (5x faster than sequential)**
-
-Instead of waiting 5 minutes for AI tasks to run one-by-one, we run 6 AI
-generation jobs simultaneously. Your content is ready in ~90 seconds total.
-
----
-
-## 🤔 What Is This App?
-
-Here's the simple explanation:
-
-1. **You upload** one audio file (your podcast episode)
-2. **AI analyzes** your content, understanding speakers, topics, and key moments
-3. **You get** a complete content distribution package:
-   - Summary with key insights
-   - Social media posts tailored for Twitter, LinkedIn, Instagram, TikTok,
-     YouTube, and Facebook
-   - Title suggestions (short, long, SEO-optimized)
-   - Platform-specific hashtags
-   - YouTube chapter timestamps
-   - Key moments for viral clips
-   - Full transcript with speaker identification
-
-**The workflow:** Record → Upload → AI Analyzes → Get Distribution Content
-
----
+Transform your podcasts with AI-powered analysis. Upload your audio and get AI-generated summaries, transcripts, social posts, key moments, and more - all in minutes.
 
 ## ✨ Features
 
-### For Podcast Creators
+- **AI-Powered Transcription** - High-accuracy transcription using AssemblyAI with word-level timing
+- **Smart Summaries** - Comprehensive summaries with key points, insights, and TL;DR
+- **Social Media Posts** - Platform-optimized content for Twitter, LinkedIn, Instagram, TikTok, YouTube, and Facebook
+- **SEO Optimization** - AI-generated titles and hashtags for maximum discoverability
+- **Key Moments** - Automatically identify viral-worthy moments with timestamps
+- **YouTube Chapters** - Auto-generated chapter timestamps for better navigation
+- **Speaker Diarization** - Full transcript with speaker identification (ULTRA plan)
+- **Parallel Processing** - Fast AI generation with optimized parallel execution
 
-- **📝 AI Summary** - Comprehensive overview with bullets, key insights, and
-  TLDR
-- **📱 Social Posts** - Platform-optimized copy for 6 networks:
-  - **Twitter** - 280 chars, punchy and engaging
-  - **LinkedIn** - Professional tone, thought leadership
-  - **Instagram** - Visual hooks with engagement questions
-  - **TikTok** - Casual, trend-aware, Gen-Z friendly
-  - **YouTube** - Description with CTAs and timestamps
-  - **Facebook** - Community-focused conversation starters
-- **🎯 Title Suggestions** - 4 different styles for every use case:
-  - YouTube Short (catchy, under 60 chars)
-  - YouTube Long (descriptive, SEO-friendly)
-  - Podcast Titles (episode-focused)
-  - SEO Keywords (discoverability)
-- **#️⃣ Hashtags** - Platform-specific tags optimized for reach
-- **⏱️ YouTube Timestamps** - Auto-generated chapter markers for better
-  navigation
-- **🎤 Key Moments** - AI identifies viral clip opportunities with timestamps
-- **👥 Speaker Diarization** - "Who said what" with speaker labels and
-  confidence scores
+## 🚀 Tech Stack
 
-### Technical Features (The Smart Stuff)
+### Frontend
+- **Next.js 16** - React framework with App Router
+- **React 19** - Latest React with compiler optimizations
+- **TypeScript** - Type-safe development
+- **Tailwind CSS 4** - Utility-first styling
+- **Radix UI** - Accessible component primitives
+- **Lucide React** - Beautiful icon library
 
-- **⚡ Parallel AI Processing** - 6 AI jobs run simultaneously (60s total vs
-  300s sequential)
-- **🔄 Real-time Updates** - See progress live with Convex subscriptions (no
-  polling)
-- **🛡️ Durable Workflows** - Inngest automatically retries failed steps (no lost
-  work)
-- **📊 Plan-based Feature Gating** - Features unlock based on subscription tier
-  (Free/Pro/Ultra)
-- **🎨 Dark Mode Support** - Beautiful UI that adapts to your preference
-- **📦 Type-safe Throughout** - End-to-end TypeScript
-- **🔐 Secure by Default** - Clerk authentication with row-level security
+### Backend & Infrastructure
+- **Convex** - Real-time backend database with reactive queries
+- **Inngest** - Durable workflow orchestration with automatic retries
+- **AssemblyAI** - Advanced audio transcription and analysis
+- **Google Gemini** - AI content generation
+- **Vercel Blob** - File storage and CDN
+- **Clerk** - Authentication and user management with billing integration
 
----
+### Development Tools
+- **Biome** - Fast linter and formatter
+- **Concurrently** - Run multiple dev processes
 
-## 🔧 How It Works
+## 📋 Prerequisites
 
-### User Flow
+- Node.js 20+ and npm/yarn/pnpm
+- Accounts and API keys for:
+  - [Convex](https://convex.dev) - Backend database
+  - [Clerk](https://clerk.com) - Authentication
+  - [AssemblyAI](https://www.assemblyai.com) - Transcription
+  - [Google AI Studio](https://aistudio.google.com) - Gemini API
+  - [Vercel](https://vercel.com) - Blob storage
+  - [Inngest](https://www.inngest.com) - Workflow orchestration
 
-```mermaid
-flowchart TD
-    A[User Uploads Audio] --> B[File Saved to Vercel Blob]
-    B --> C[Inngest Event Triggered]
-    C --> D[Project Status: Processing]
-    D --> E[AssemblyAI Transcription]
-    E --> F[Parallel AI Content Generation]
-    F --> G[Results Saved to Convex]
-    G --> H[Project Status: Completed]
-    H --> I[User Views Dashboard]
-    I --> J[Real-time Updates via Convex]
-```
+## �️ Installation
 
-**Performance Notes:**
-
-- Transcription: ~30-60 seconds
-- AI Content Generation (parallel): ~60 seconds
-- **Total Processing Time: ~90-120 seconds**
-
----
-
-### Parallel AI Processing Architecture
-
-```mermaid
-flowchart TD
-    A[AssemblyAI Transcription Complete] --> B{Fan-out to Parallel Jobs}
-    B --> C[Generate Summary]
-    B --> D[Generate Social Posts]
-    B --> E[Generate Titles]
-    B --> F[Generate Hashtags]
-    B --> G[Generate YouTube Timestamps]
-    B --> H[Generate Key Moments]
-    C --> I[Join All Results]
-    D --> I
-    E --> I
-    F --> I
-    G --> I
-    H --> I
-    I --> J[Save to Convex Database]
-    J --> K[UI Updates in Real-time]
-```
-
-**Why This Matters:**
-
-- **Sequential**: 6 jobs × 50s each = ~300 seconds (5 minutes)
-- **Parallel**: All jobs run simultaneously = ~60 seconds
-- **Result**: 5x faster processing
-
----
-
-### Data Architecture
-
-```mermaid
-flowchart LR
-    A[Client Upload] --> B[Next.js API Route]
-    B --> C[Clerk Auth Check]
-    C --> D[Vercel Blob Storage]
-    D --> E[Inngest Event]
-    E --> F[AssemblyAI Transcription]
-    E --> G[Gemini AI Content Generation]
-    F --> H[Convex Database]
-    G --> H
-    H --> I[Real-time Subscription]
-    I --> J[Client Dashboard Update]
-```
-
----
-
-## 🛠️ Setup & Configuration
-
-### Installation Steps
-
-1. **Clone the repository**
-
+1. Clone the repository:
 ```bash
-git clone https://github.com/rohanwani10/PodSens-AI-Podcast-Post-Production-Platform.git
-
-cd PodSens-AI-Podcast-Post-Production-Platform
+git clone <repository-url>
+cd ai-podcast-youtube
 ```
 
-2. **Install dependencies**
-
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-3. **Set up environment variables**
+3. Set up environment variables:
 
-```bash
-cp .env.example .env.local
+Create a `.env.local` file in the root directory:
+
+```env
+# Convex
+CONVEX_DEPLOYMENT=
+NEXT_PUBLIC_CONVEX_URL=
+
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+
+# AssemblyAI
+ASSEMBLYAI_API_KEY=
+
+# Google Gemini
+GEMINI_API_KEY=
+
+# Vercel Blob Storage
+BLOB_READ_WRITE_TOKEN=
+
+# Inngest
+INNGEST_EVENT_KEY=
+INNGEST_SIGNING_KEY=
 ```
 
-Then fill in all the required keys in `.env.local` (see Environment Variables
-section below).
-
-4. **Start Convex development database**
-
+4. Set up Convex:
 ```bash
-npm run convex dev
+npx convex dev
 ```
 
-This will:
+5. Configure Clerk billing features in your Clerk Dashboard to match the feature identifiers in `lib/tier-config.ts`
 
-- Create a new Convex project (or connect to existing)
-- Set up your database schema
-- Generate TypeScript types
-- Start watching for changes
+## 🏃 Development
 
-5. **Start the development server** (in a new terminal)
+Run the development server:
 
 ```bash
 npm run dev
 ```
 
-6. **Open your browser**
+This starts both Next.js (port 3000) and Convex dev server concurrently.
 
-Navigate to `http://localhost:3000`
+Open [http://localhost:3000](http://localhost:3000) to view the app.
 
----
+## 📦 Build & Deploy
 
-### Service Configuration
-
-#### 1. Clerk Setup (Authentication & Billing)
-
-1. Go to [Clerk Dashboard](https://go.clerk.com/sonny)
-2. Create a new application
-3. Copy your publishable and secret keys to `.env.local`
-4. **Enable Billing**:
-   - Go to "Billing" → "Subscriptions"
-   - Create three plans: `free`, `pro`, `ultra`
-   - Set prices: Free ($0), Pro ($29/mo), Ultra ($69/mo)
-5. **Configure Features** (match these identifiers):
-   - `summary` (Free, Pro, Ultra)
-   - `social_posts` (Pro, Ultra)
-   - `titles` (Pro, Ultra)
-   - `hashtags` (Pro, Ultra)
-   - `youtube_timestamps` (Ultra only)
-   - `key_moments` (Ultra only)
-   - `speaker_diarization` (Ultra only)
-
-#### 2. Convex Setup (Real-time Database)
-
-1. Go to [Convex Dashboard](https://convex.dev)
-2. Create a new project
-3. Copy your deployment URL to `.env.local`
-4. The schema will auto-deploy when you run `pnpm convex dev`
-
-#### 3. Vercel Blob Setup (File Storage)
-
-1. Go to [Vercel Dashboard](https://vercel.com)
-2. Create a new project (or use existing)
-3. Go to "Storage" → "Create Database" → "Blob"
-4. Copy the `BLOB_READ_WRITE_TOKEN` to `.env.local`
-
-#### 4. Inngest Setup (Workflow Orchestration)
-
-1. Go to [Inngest Dashboard](https://www.inngest.com/)
-2. Create a new app
-3. Copy your Event Key and Signing Key to `.env.local`
-4. In development, Inngest will auto-discover your functions
-
-#### 5. AssemblyAI Setup (Transcription)
-
-1. Go to [AssemblyAI Dashboard](https://www.assemblyai.com/dashboard)
-2. Create an account (free tier available)
-3. Copy your API key to `.env.local`
-4. **Pricing**: ~$0.00025/second (~$0.65 per hour of audio)
-
-#### 6. Gemini Setup (AI Content Generation)
-
-1. Go to [Gemini Platform](https://gemini.google.com)
-2. Create an API key
-3. Copy your API key to `.env.local`
-4. **Model Used**: `gemini-3-preview`
-
----
-
-## 📊 Database Schema Overview
-
-### Main Model: `projects` Table
-
-The entire application revolves around a single `projects` table in Convex. This
-denormalized structure allows for atomic updates and real-time reactivity.
-
-**Key Fields:**
-
-| Field               | Type   | Description                                                 |
-| ------------------- | ------ | ----------------------------------------------------------- |
-| `userId`            | string | Clerk user ID (links project to user)                       |
-| `inputUrl`          | string | Vercel Blob URL for uploaded file                           |
-| `status`            | enum   | `uploaded` → `processing` → `completed` or `failed`         |
-| `jobStatus`         | object | Granular status for `transcription` and `contentGeneration` |
-| `transcript`        | object | Full transcript with segments, speakers, chapters           |
-| `summary`           | object | AI-generated summary with bullets, insights, TLDR           |
-| `socialPosts`       | object | Platform-specific posts (Twitter, LinkedIn, etc.)           |
-| `titles`            | object | Title suggestions (YouTube, podcast, SEO)                   |
-| `hashtags`          | object | Platform-specific hashtag recommendations                   |
-| `youtubeTimestamps` | array  | Chapter markers for YouTube descriptions                    |
-| `keyMoments`        | array  | Viral clip opportunities with timestamps                    |
-
-**Design Decisions:**
-
-- **Denormalized structure** - All data in one document for atomic updates
-- **Optional fields** - Allow progressive population as Inngest jobs complete
-- **Indexes** - Optimize queries by user, status, and creation date
-- **Real-time reactivity** - Convex subscriptions trigger UI updates
-  automatically
-
-**Indexes:**
-
-- `by_user` - List all projects for a user
-- `by_status` - Filter by processing status
-- `by_user_and_status` - User's active/completed projects
-- `by_created_at` - Sort by newest first
-
----
-
-## 🚀 Deployment
-
-### Vercel Deployment (Recommended)
-
-1. **Push your code to GitHub**
+Build for production:
 
 ```bash
-git add .
-git commit -m "Initial commit"
-git push origin main
+npm run build
 ```
 
-2. **Import to Vercel**
+Start production server:
 
-- Go to [Vercel Dashboard](https://vercel.com)
-- Click "Import Project"
-- Select your GitHub repository
-- Vercel will auto-detect Next.js
+```bash
+npm start
+```
 
-3. **Add environment variables**
+## 💰 Pricing Tiers
 
-In Vercel dashboard → Settings → Environment Variables, add all variables from
-your `.env.local`
+### Free Plan
+- 3 lifetime projects
+- 10MB max file size
+- 10 minutes max duration
+- AI summary generation
+- Basic transcription
 
-4. **Deploy**
+### Pro Plan - $29/month
+- 30 active projects
+- 200MB max file size
+- 2 hours max duration
+- All Free features plus:
+  - Social media posts
+  - Title suggestions
+  - Hashtag generation
 
-Vercel will automatically deploy on every push to `main`
+### Ultra Plan - $69/month
+- Unlimited projects
+- 3GB max file size
+- Unlimited duration
+- All Pro features plus:
+  - Key moments detection
+  - YouTube chapter timestamps
+  - Speaker diarization
 
-5. **Configure custom domain** (optional)
+## 🏗️ Project Structure
 
-Settings → Domains → Add your domain
+```
+├── app/                      # Next.js App Router
+│   ├── actions/             # Server actions
+│   ├── api/                 # API routes
+│   ├── dashboard/           # Dashboard pages
+│   └── components/          # App-specific components
+├── components/              # Reusable UI components
+│   ├── home/               # Landing page sections
+│   ├── processing-flow/    # Processing status UI
+│   ├── project-detail/     # Project detail views
+│   ├── project-tabs/       # Content tabs
+│   └── ui/                 # Base UI components
+├── convex/                  # Convex backend
+│   ├── schema.ts           # Database schema
+│   └── projects.ts         # Project queries/mutations
+├── inngest/                 # Workflow orchestration
+│   ├── functions/          # Inngest functions
+│   ├── steps/              # Processing steps
+│   │   ├── ai-generation/  # AI content generation
+│   │   ├── persistence/    # Data persistence
+│   │   └── transcription/  # Audio transcription
+│   └── schemas/            # Output schemas
+└── lib/                     # Shared utilities
+    ├── tier-config.ts      # Plan limits & features
+    └── hooks/              # Custom React hooks
+```
 
----
+## 🔄 Processing Workflow
 
-### Monitoring & Observability
+1. **Upload** - User uploads audio file to Vercel Blob
+2. **Trigger** - Server action sends event to Inngest
+3. **Transcription** - AssemblyAI transcribes audio with speaker detection
+4. **AI Generation** - Parallel execution of 6 AI tasks (based on plan):
+   - Summary (all plans)
+   - Social posts (Pro+)
+   - Titles (Pro+)
+   - Hashtags (Pro+)
+   - Key moments (Ultra)
+   - YouTube timestamps (Ultra)
+5. **Persistence** - Results saved to Convex database
+6. **Real-time Updates** - UI updates automatically via Convex subscriptions
 
-Keep an eye on these dashboards:
+## 🎯 Key Features
 
-- **Inngest Dashboard** - Workflow execution logs, retry attempts, failures
-- **Convex Dashboard** - Database queries, performance metrics, real-time
-  connections
-- **Vercel Analytics** - Traffic, page views, edge function performance
-- **Clerk Dashboard** - User signups, active subscriptions, billing events
+### Durable Workflows
+- Automatic retries with exponential backoff
+- Individual job error tracking
+- Graceful degradation (save successful results even if some jobs fail)
 
----
+### Parallel Processing
+- 5x faster than sequential processing
+- Optimized for Inngest's parallel execution
+- ~60s total vs ~300s sequential
 
-### Important Concepts
+### Real-time UI
+- Convex reactive queries for instant updates
+- Granular job status tracking
+- Progress indicators for each processing phase
 
-**Plan-based Feature Gating**
+### Tier-based Access Control
+- Feature gating based on Clerk billing
+- Graceful upgrade prompts
+- Retry/regenerate failed jobs
 
-Features are enabled based on the user's Clerk subscription tier:
+## 🧪 Code Quality
 
-- **Free**: Summary only (3 projects lifetime)
-- **Pro**: + Social posts, titles, hashtags (30 projects/month)
-- **Ultra**: + YouTube timestamps, key moments, full transcript (unlimited)
+Lint and format code:
 
-**Parallel AI Processing**
+```bash
+npm run lint
+npm run format
+```
 
-Instead of running AI generation tasks sequentially (slow), Inngest runs 6 jobs
-in parallel using `Promise.allSettled`. This reduces processing time from ~5
-minutes to ~60 seconds.
+## 📝 License
 
-**Real-time Updates**
+This project is private and proprietary.
 
-Convex subscriptions (`useQuery`) automatically re-render components when
-database data changes. No polling, no manual refetching. As Inngest updates the
-project status, the UI updates instantly.
+## 🤝 Contributing
 
-**Durable Execution**
+This is a private project. Contact the repository owner for contribution guidelines.
 
-Inngest provides automatic retry logic. If Gemini times out or AssemblyAI fails,
-the step retries with exponential backoff. Your users never lose work.
+## 📧 Support
 
----
+For issues or questions, please contact the project maintainer.
